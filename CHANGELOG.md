@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.1
+
+Documentation only; no change in behaviour.
+
+- README: pub.dev version and pub points badges, and the `^0.1.0`
+  constraint `dart pub add` writes.
+- README: compressed AIFF-C (`ima4`) is no longer listed as handled. It is
+  detected, but its duration is 64 times too short because `COMM` counts
+  packets for it ([#22](https://github.com/saimskywalker/dart-imaji-audio-sniff/issues/22)).
+- README and API docs: an MP3 or AAC duration marked `exact` still includes
+  the encoder's delay and padding; `estimated` covers any MP3 without a
+  Xing/Info/VBRI header; `sniffFile` and `sniffFileSync` throw
+  `FileSystemException` when the file cannot be opened; an ID3v2 tag alone
+  identifies an MP3 only when nothing after it can be read; `audioOffset` is
+  not reported for M4A; the CLI exits with 2 on an unreadable file.
+- README: the "not supported yet" list now also names AMR, WebM/Matroska and
+  Ogg Speex.
+- API docs: `AudioProbe.codec` lists the names it really returns (a WAV
+  format tag 0x0055 is `mp3`, not `0x0055`; M4A gives `mp4a` or `alac`).
+
 ## 0.1.0
 
 First release.
