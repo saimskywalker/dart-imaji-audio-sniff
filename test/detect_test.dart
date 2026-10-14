@@ -166,6 +166,12 @@ void main() {
       }
     });
 
+    test('a QuickTime file that opens with moov is M4A', () {
+      final p = sniffBytes(box('moov', [mvhd(timescale: 600, duration: 1200)]));
+      expect(p.format, AudioFormat.m4a);
+      expect(p.duration, const Duration(seconds: 2));
+    });
+
     test('empty and tiny inputs are unknown', () {
       expect(sniffBytes(const []).format, AudioFormat.unknown);
       expect(sniffBytes(const [0x52]).format, AudioFormat.unknown);

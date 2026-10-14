@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'aiff.dart';
 import 'bytes.dart';
 import 'flac.dart';
 import 'mp3.dart';
+import 'mp4.dart';
 import 'types.dart';
 import 'wav.dart';
 
@@ -111,7 +113,12 @@ AudioProbe _dispatch(ByteReader r) {
       hasTag(head, 0, 'RF64') ||
       hasTag(head, 0, 'BW64');
   if (isRiff && hasTag(head, 8, 'WAVE')) return parseWav(r);
+  if (hasTag(head, 0, 'FORM') &&
+      (hasTag(head, 8, 'AIFF') || hasTag(head, 8, 'AIFC'))) {
+    return parseAiff(r);
+  }
   if (hasTag(head, 0, 'fLaC')) return parseFlac(r, 0, const {});
+  if (looksLikeMp4(head)) return parseMp4(r);
 
   // ID3v2 tags (there may be more than one) in front of MP3 audio, or in
   // front of a FLAC stream by some taggers' choice.
