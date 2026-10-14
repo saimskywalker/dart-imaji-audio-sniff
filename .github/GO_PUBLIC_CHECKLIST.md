@@ -34,7 +34,7 @@ public.
 - [ ] Read the README once more as a stranger would
 - [ ] Settings → General: make the repository public
 - [ ] Settings → Branches: protect `main` (require the CI checks)
-- [ ] `dart pub publish` (optionally under a verified publisher), then add
+- [x] `dart pub publish` (optionally under a verified publisher), then add
       the pub.dev version badge to the README
 - [ ] Tag `v0.1.0` and create a GitHub release from the CHANGELOG entry
 - [ ] Optional: automated publishing from GitHub Actions on tags

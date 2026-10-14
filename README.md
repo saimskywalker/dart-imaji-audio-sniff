@@ -1,6 +1,8 @@
 # imaji_audio_sniff — real audio format and duration from the bytes, for Dart & Flutter
 
 [![CI](https://github.com/saimskywalker/dart-imaji-audio-sniff/actions/workflows/ci.yml/badge.svg)](https://github.com/saimskywalker/dart-imaji-audio-sniff/actions/workflows/ci.yml)
+[![pub package](https://img.shields.io/pub/v/imaji_audio_sniff.svg)](https://pub.dev/packages/imaji_audio_sniff)
+[![pub points](https://img.shields.io/pub/points/imaji_audio_sniff)](https://pub.dev/packages/imaji_audio_sniff/score)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **The extension is a claim; the bytes are the truth.**
@@ -20,14 +22,16 @@ FLAC or M4A wearing an `.mp3` name** (or no extension at all): renamed by a
 user, a chat app, a download manager or a content provider.
 
 Why: [`just_audio`](https://pub.dev/packages/just_audio), ExoPlayer/Media3
-on Android and AVPlayer on iOS/macOS **pick the demuxer from the file
-extension**. A WAV named `.mp3` goes to the MP3 extractor, which "finds"
+on Android and AVPlayer on iOS/macOS **let the file extension choose the
+demuxer** (Media3 tries the extractor the extension names before any other,
+and falls back only if that one declines the bytes). A WAV named `.mp3` goes
+to the MP3 extractor, which "finds"
 frame syncs inside raw PCM, estimates `size ÷ bitrate` as the duration, and
 decodes nothing. `ffmpeg` and most servers sniff the bytes instead, so the
 bug only shows up on the device.
 
 `imaji_audio_sniff` reads a few KiB of the file, tells you what it really
-is, gives you the exact duration from the header, and can hand the player a
+is, gives you the duration from the header, and can hand the player a
 correctly named copy.
 
 ## Quick start (30 seconds)
@@ -35,6 +39,8 @@ correctly named copy.
 ```sh
 dart pub add imaji_audio_sniff     # or: flutter pub add imaji_audio_sniff
 ```
+
+That adds `imaji_audio_sniff: ^0.1.0` (or newer) to your `dependencies`.
 
 ```dart
 import 'package:imaji_audio_sniff/imaji_audio_sniff_io.dart';
@@ -89,7 +95,9 @@ Two libraries:
 | `package:imaji_audio_sniff/imaji_audio_sniff_io.dart` | Adds file helpers; re-exports everything above. |
 
 **Sniffing.** Every function returns an `AudioProbe` and never throws on bad
-input (unknown bytes give `AudioFormat.unknown`):
+bytes (unknown bytes give `AudioFormat.unknown`). The one exception is I/O:
+`sniffFile` and `sniffFileSync` throw a `FileSystemException` when the file
+cannot be opened, because a missing file is not an unknown format.
 
 | Function | Source |
 |---|---|
@@ -108,9 +116,9 @@ a few MiB, whatever the file claims about itself.
 |---|---|
 | `format` | `AudioFormat.wav`, `flac`, `mp3`, `aiff`, `aifc`, `m4a` or `unknown`. |
 | `duration` | From the header, or `null` when the header cannot say. |
-| `durationAccuracy` | `exact` (header counts) or `estimated` (CBR MP3 bitrate, compressed WAV byte rate). |
+| `durationAccuracy` | `exact` (counts the header declares) or `estimated` (an MP3 with no Xing/Info/VBRI header, from its first frame's bitrate; a compressed WAV with no usable `fact`, from its byte rate). |
 | `sampleRate`, `channels`, `bitsPerSample`, `codec` | When the header states them. |
-| `audioOffset` | Where the audio payload starts. |
+| `audioOffset` | Where the audio payload starts, when known (not reported for M4A/MP4). |
 | `notes` | `ProbeNote`s: `id3v2Tag`, `rf64`, `extensibleFormat`, `missingPadByte`, `unknownDataSize`, `truncated`, `fragmented`. |
 | `extensionLies(name)` | The name has an extension and it contradicts the bytes. |
 | `extensionMatches(name)` | The name's extension leads a player to the right demuxer (false when there is none). |
@@ -130,21 +138,27 @@ There is also a command-line tool:
 
 ```sh
 dart pub global activate imaji_audio_sniff
-imaji_audio_sniff ~/Downloads/*.mp3     # exit code 1 if any extension lies
+imaji_audio_sniff ~/Downloads/*.mp3     # exit code 1 if any extension lies, 2 if a file cannot be read
 ```
 
 ## Supported formats and edge cases
 
 | Format | Detected by | Duration from | Edge cases handled |
 |---|---|---|---|
-| WAV | `RIFF`/`RF64`/`BW64` + `WAVE` | `data` size ÷ block align ÷ rate (`fact` for compressed audio) | `bext`, `iXML`, `JUNK`, `LIST`, `FLLR` … before `fmt `; `data` before `fmt `; odd-sized chunks **with and without** the pad byte; RF64/BW64 `ds64` sizes beyond 4 GiB; `WAVE_FORMAT_EXTENSIBLE`; PCM, float, A-law, µ-law; size 0 / 0xFFFFFFFF from streamed writers; truncated copies; wrong byte-rate fields |
+| WAV | `RIFF`/`RF64`/`BW64` + `WAVE` | `data` size ÷ block align ÷ rate (`fact` for compressed audio; without it, an `estimated` byte-rate figure) | `bext`, `iXML`, `JUNK`, `LIST`, `FLLR` … before `fmt `; `data` before `fmt `; odd-sized chunks **with and without** the pad byte; RF64/BW64 `ds64` sizes beyond 4 GiB; `WAVE_FORMAT_EXTENSIBLE`; PCM, float, A-law, µ-law; size 0 / 0xFFFFFFFF from streamed writers; truncated copies; wrong byte-rate fields |
 | FLAC | `fLaC` | STREAMINFO total samples ÷ rate | ID3v2 tag(s) in front; total samples 0 = unknown (never zero); full 36-bit sample counts |
-| MP3 | ID3v2 and/or a Layer III frame header confirmed by the next frame | Xing/Info or VBRI frame count | Strict sync rejects PCM and 0xFF runs; MPEG-1/2/2.5; CRC-protected frames; padding after the tag; CBR estimate (flagged) that excludes ID3v1 and APEv2 tags |
-| AIFF / AIFF-C | `FORM` + `AIFF`/`AIFC` | `COMM` frames ÷ 80-bit extended rate | `sowt`, `fl32`, `ima4` …; `SSND` offset; truncated sound data |
+| MP3 | A Layer III frame header confirmed by the next frame, after any ID3v2 tags (an ID3v2 tag alone counts only when it runs past the bytes available) | Xing/Info or VBRI frame count | Strict sync rejects PCM and 0xFF runs; MPEG-1/2/2.5; CRC-protected frames; padding after the tag; CBR estimate (flagged) that excludes ID3v1 and APEv2 tags |
+| AIFF / AIFF-C | `FORM` + `AIFF`/`AIFC` | `COMM` frames ÷ 80-bit extended rate | Uncompressed AIFF-C (`sowt`, `twos`, `in24`, `fl32`, `fl64` …); `SSND` offset; truncated sound data |
 | M4A / MP4 / MOV | `ftyp` (image brands excluded) or a leading `moov` | `mvhd` duration ÷ timescale | `moov` at the end; 64-bit box sizes; size-0 boxes; fragmented files via `mehd`; AAC/ALAC codec, rate and channels from the sample entry |
 
-Not supported yet (reported as `unknown`): Ogg (Vorbis, Opus, Ogg FLAC), raw
-AAC (ADTS), WMA, CAF, MP1/MP2. Pull requests welcome.
+Known gap: compressed AIFF-C (`ima4` and others) is detected and its codec
+reported, but its duration is not yet right. For `ima4`, `COMM` counts
+64-frame packets rather than frames, so the duration comes out 64 times too
+short ([#22](https://github.com/saimskywalker/dart-imaji-audio-sniff/issues/22)).
+
+Not supported yet (reported as `unknown`): Ogg (Vorbis, Opus, Ogg FLAC,
+Speex), raw AAC (ADTS), AMR, CAF, WebM/Matroska, WMA, MP1/MP2. Pull requests
+welcome.
 
 ## FAQ
 
@@ -160,8 +174,11 @@ capped per probe no matter what the file claims.
 file length is known), any number would be a guess. Fall back to the
 player's figure.
 
-**Is an MP3 duration exact?** With a Xing/Info or VBRI header, yes (frame
-count × samples per frame). Without one it is a bitrate estimate and
+**Is an MP3 duration exact?** With a Xing/Info or VBRI header it is exact
+to the frame (frame count × samples per frame). That count includes the
+encoder's delay and padding, so it runs a few tens of milliseconds longer
+than the audio itself; the same is true of an AAC M4A whose `mvhd` includes
+its priming samples. Without a header it is a bitrate estimate and
 `durationAccuracy` says `estimated`; that estimate is wrong for VBR files
 that lack a header, which is exactly why it is flagged.
 

@@ -45,6 +45,11 @@ enum DurationAccuracy {
   /// Computed from counts the file's own header declares: WAV sample frames,
   /// FLAC total samples, an MP3 Xing/Info/VBRI frame count, AIFF frames or
   /// the MP4 movie header.
+  ///
+  /// Exact to what the header counts, which for MP3 (and for an AAC M4A
+  /// whose movie header includes its priming samples) still includes the
+  /// encoder's delay and padding: a few tens of milliseconds more than the
+  /// audio itself.
   exact,
 
   /// Derived from a byte rate: a constant-bit-rate MP3 without a VBR header,
@@ -140,9 +145,11 @@ final class AudioProbe {
   /// Bits per sample, when meaningful for the codec.
   final int? bitsPerSample;
 
-  /// A short codec name: `pcm`, `float`, `alaw`, `mulaw`, `flac`, `mp3`,
-  /// an AIFF-C compression type such as `sowt`, or `0x0055` for any other
-  /// WAV format tag.
+  /// A short codec name: `flac` or `mp3`; for WAV, `pcm`, `float`, `alaw`,
+  /// `mulaw`, `adpcm-ms`, `adpcm-ima`, `mpeg` or `mp3`, and any other format
+  /// tag in hex (such as `0x0161`); for AIFF, `pcm` or the AIFF-C
+  /// compression type (such as `sowt`); for M4A, the sample entry type
+  /// (such as `mp4a` or `alac`).
   final String? codec;
 
   /// Byte offset where the audio payload starts, when known.

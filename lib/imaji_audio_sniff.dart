@@ -1,8 +1,8 @@
 /// The extension is a claim; the bytes are the truth.
 ///
 /// Detects the real audio container (WAV, RF64/BW64, FLAC, MP3, AIFF,
-/// AIFF-C, M4A/MP4) from a file's bytes and reads its exact duration from
-/// the header, so a Dart or Flutter app can catch a file whose extension
+/// AIFF-C, M4A/MP4) from a file's bytes and reads its duration from the
+/// header, so a Dart or Flutter app can catch a file whose extension
 /// lies before a player picks the wrong demuxer for it.
 ///
 /// Pure Dart with no dependencies, safe on every platform including the web.
