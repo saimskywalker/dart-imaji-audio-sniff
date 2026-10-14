@@ -43,8 +43,9 @@ enum AudioFormat {
 /// How far a [AudioProbe.duration] can be trusted.
 enum DurationAccuracy {
   /// Computed from counts the file's own header declares: WAV sample frames,
-  /// FLAC total samples, an MP3 Xing/Info/VBRI frame count, AIFF frames or
-  /// the MP4 movie header.
+  /// FLAC total samples, an MP3 Xing/Info/VBRI frame count, AIFF frames
+  /// (packets times their frames for compressed AIFF-C) or the MP4 movie
+  /// header.
   ///
   /// Exact to what the header counts, which for MP3 (and for an AAC M4A
   /// whose movie header includes its priming samples) still includes the
