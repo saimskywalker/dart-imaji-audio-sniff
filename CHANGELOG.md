@@ -2,13 +2,17 @@
 
 ## 0.1.1
 
-Documentation only; no change in behaviour.
-
+- Fix: compressed AIFF-C durations
+  ([#22](https://github.com/saimskywalker/dart-imaji-audio-sniff/issues/22)).
+  For compressed sound, `COMM` counts packets, not sample frames. An `ima4`
+  (Apple IMA 4:1 ADPCM) duration was 64 times too short and still marked
+  `exact`; it is now packets × 64 ÷ rate. MACE 3:1 and 6:1 (`MAC3`, `MAC6`)
+  are packets × 6. `ulaw` and `alaw` stay one frame per count. Each of these
+  is now also checked for truncated sound data. Any other compressed type
+  (`GSM `, `ilbc`, `Qclp`, `QDM2` …) now gives no duration instead of a
+  wrong `exact` one.
 - README: pub.dev version and pub points badges, and the `^0.1.0`
   constraint `dart pub add` writes.
-- README: compressed AIFF-C (`ima4`) is no longer listed as handled. It is
-  detected, but its duration is 64 times too short because `COMM` counts
-  packets for it ([#22](https://github.com/saimskywalker/dart-imaji-audio-sniff/issues/22)).
 - README and API docs: an MP3 or AAC duration marked `exact` still includes
   the encoder's delay and padding; `estimated` covers any MP3 without a
   Xing/Info/VBRI header; `sniffFile` and `sniffFileSync` throw

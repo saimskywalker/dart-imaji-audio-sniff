@@ -23,15 +23,14 @@ void main() {
 
     test('AIFF-C reports its compression type', () {
       final p = sniffBytes(aiffFile([
-        ifChunk(
-            'COMM',
-            commBody(
-                frames: 4410, compression: 'ima4', compressionName: 'IMA 4:1')),
-        ifChunk('SSND', ssndBody(100)),
+        ifChunk('COMM',
+            commBody(frames: 4410, compression: 'sowt', compressionName: 'x')),
+        ifChunk('SSND', ssndBody(4410 * 4)),
       ], aifc: true));
       expect(p.format, AudioFormat.aifc);
-      expect(p.codec, 'ima4');
+      expect(p.codec, 'sowt');
       expect(p.duration, const Duration(milliseconds: 100));
+      expect(p.durationAccuracy, DurationAccuracy.exact);
     });
 
     test('SSND offset is honoured and truncation detected', () {
