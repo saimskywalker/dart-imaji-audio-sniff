@@ -6,8 +6,6 @@ description: >-
 version: 0.1.0
 repository: https://github.com/saimskywalker/dart-imaji-audio-sniff
 issue_tracker: https://github.com/saimskywalker/dart-imaji-audio-sniff/issues
-funding:
-  - https://github.com/sponsors/saimskywalker
 topics:
   - audio
   - flutter

@@ -20,9 +20,8 @@ public.
 ## Done in the repository
 
 - [x] MIT licence, README (symptom, quick start, API, formats table, FAQ,
-      comparison), CHANGELOG 0.1.0, CONTRIBUTING, FUNDING.yml
-- [x] pubspec `description`, `topics`, `repository`, `issue_tracker`,
-      `funding`
+      comparison), CHANGELOG 0.1.0, CONTRIBUTING
+- [x] pubspec `description`, `topics`, `repository`, `issue_tracker`
 - [x] All fixtures are synthetic, generated in `test/support/`
 - [x] Actions pinned to commit SHAs
 
@@ -35,8 +34,6 @@ public.
 - [ ] Read the README once more as a stranger would
 - [ ] Settings → General: make the repository public
 - [ ] Settings → Branches: protect `main` (require the CI checks)
-- [ ] Enrol in GitHub Sponsors, or remove the `funding` entry from
-      `pubspec.yaml` and `.github/FUNDING.yml`
 - [ ] `dart pub publish` (optionally under a verified publisher), then add
       the pub.dev version badge to the README
 - [ ] Tag `v0.1.0` and create a GitHub release from the CHANGELOG entry
