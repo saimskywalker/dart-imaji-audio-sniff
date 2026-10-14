@@ -1,13 +1,11 @@
 .dart_tool/
-.packages
 build/
 pubspec.lock
-.flutter-plugins
-.flutter-plugins-dependencies
+doc/api/
+coverage/
+.DS_Store
 .idea/
 *.iml
-.DS_Store
-android/.gradle/
-android/local.properties
-example/ios/Pods/
-example/.flutter-plugins*
+.vscode/
+# Private patterns for tool/leak_scan.sh (never commit).
+.leakscan

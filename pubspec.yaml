@@ -1,0 +1,25 @@
+name: imaji_audio_sniff
+description: >-
+  Dart & Flutter: find the real audio format (WAV, FLAC, MP3, AIFF, M4A) and
+  exact duration from bytes when a lying extension shows the wrong duration or
+  plays silence.
+version: 0.1.0
+repository: https://github.com/saimskywalker/dart-imaji-audio-sniff
+issue_tracker: https://github.com/saimskywalker/dart-imaji-audio-sniff/issues
+funding:
+  - https://github.com/sponsors/saimskywalker
+topics:
+  - audio
+  - flutter
+  - wav
+  - mp3
+  - flac
+
+environment:
+  sdk: ^3.5.0
+
+executables:
+  imaji_audio_sniff: imaji_audio_sniff
+dev_dependencies:
+  lints: '>=5.0.0 <7.0.0'
+  test: ^1.25.0
